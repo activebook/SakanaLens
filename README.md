@@ -13,6 +13,7 @@ It will automatically translate the text on the screen of your running app.
 
 ## **Show cases**
 
+**Click the image below to watch the video:**
 [![Watch the video](https://img.youtube.com/vi/sbTPrqqoixQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=sbTPrqqoixQ)
 
 
