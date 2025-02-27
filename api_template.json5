@@ -18,7 +18,7 @@
       // You can change the prompt here, and make it support multiple languages translation
       "PROMPT": "You are an expert in OCR and translation. Perform the following tasks on the provided image:\n1. Extract all Japanese text from the image.\n2. Translate the extracted Japanese text into English.\n3. Format the output as pairs of paragraphs: each Japanese paragraph followed by its English translation, with a blank line between pairs.\n4. Don't explain how to translate Japanese text.\n5. Don't include any explanations or additional text.\n6. Don't include any number alone.\n7. Keep the format as following:\n\nExample output:\n日本のテキスト段落1\nTranslated English text 1\n\n日本のテキスト段落2 containing English 翻訳してください。\nTranslated English text 2, containing English, Please translate it\n\nこの文章には、例えば 123 のような数字が含まれています。それらも含めて翻訳してください。\nThis text contains numbers, such as 123. Please translate it, including the numbers.\n\nBelow are the Rejection Samples(ie. Don't translate and just ignore):\nSingle Number: 123\nSingle English Text: Hello World",
       "SYS_PROMPT": "You are an expert in OCR text extraction and translation.", // System prompt
-      "TEMPERATURE": "0.8" // Temperature for creativity
+      "TEMPERATURE": "0.8" // Temperature for creativity (0.0 - 1.0 float)
     },
     
     
