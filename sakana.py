@@ -7,6 +7,7 @@ from PIL import Image
 import Quartz
 import time
 import threading
+import asyncio
 import Foundation
 import queue
 import objc
@@ -254,44 +255,42 @@ class TkinterApp:
         self.app_thread.start()
         
         # Schedule the queue checking function
-        self.poll_queues()
+        self.start_thread(self.poll_event_queue)
+        self.start_thread(self.poll_result_queue)
+
+    
+    def start_thread(self, func):
+        thread = threading.Thread(target=func)
+        thread.daemon = True
+        thread.start()
+        return thread
     
     # Function to check the queues
     # Two queues: event_queue and result_queue
     # event_queue: for key events
     # result_queue: for results from the worker thread
-    def poll_queues(self):
+    def poll_event_queue(self):
         # Process event queue
-        try:
-            while True:
-                message = self.event_queue.get_nowait()
-                if message == "TaskEvent":
-                    self.tips_var.set("Processing OCR and Translation ...")
-                    if self.worker_thread and self.worker_thread.is_alive():
-                        self.text_box.insert(tk.END, "Processing in progress. Please wait.\n")
-                        self.text_box.see(tk.END)
-                        continue
-                    # Create and start the worker thread
-                    self.worker_thread = threading.Thread(target=self.run_process_and_get_response)
-                    self.worker_thread.daemon = True
-                    self.worker_thread.start()
-        except queue.Empty:
-            pass
-
-        # Process result queue
-        try:
-            while True:
-                formatted_text = self.result_queue.get_nowait()
-                if formatted_text:                    
-                    self.text_box.insert(tk.END, formatted_text)
+        while True:
+            message = self.event_queue.get()
+            if message == "TaskEvent":
+                self.tips_var.set("Processing OCR and Translation ...")
+                if self.worker_thread and self.worker_thread.is_alive():
+                    self.text_box.insert(tk.END, "Processing in progress. Please wait.\n")
                     self.text_box.see(tk.END)
-                    
-        except queue.Empty:
-            pass
+                    continue
+                # Create and start the worker thread
+                self.worker_thread = self.start_thread(self.run_process_and_get_response)
 
-        # Schedule the next poll
-        self.root.after(200, self.poll_queues)
-    
+    def poll_result_queue(self):
+        # Process result queue
+        while True:
+            formatted_text = self.result_queue.get()
+            if formatted_text:                    
+                self.text_box.insert(tk.END, formatted_text)
+                self.text_box.see(tk.END)
+            
+
     def stop_monitoring(self):
         # Stop the listener
         if hasattr(self, 'listener'):
