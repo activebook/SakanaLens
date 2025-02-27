@@ -22,29 +22,30 @@ def call_openai_api_client(image, api_config):
     key = api_config["API"]["KEY"]
     endpoint = api_config["API"]["ENDPOINT"]
     prompt = api_config["API"]["PROMPT"]
+    sys_prompt = api_config["API"]["SYS_PROMPT"]
+    temperature = float(api_config["API"]["TEMPERATURE"])
 
     # Invoke the OpenAI compatible API
     try:
         client = OpenAI(base_url=endpoint, api_key=key)
         response = client.chat.completions.create(
             model=model,
-            temperature=0,
+            temperature=temperature,
             messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": prompt
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": image_url
-                            }
+                {'role': 'system', 'content': sys_prompt},
+                {'role': 'user',
+                "content": [
+                    {
+                        "type": "text",
+                        "text": prompt
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": image_url
                         }
-                    ]
-                }
+                    }
+                ]}
             ]
         )
 
@@ -69,6 +70,8 @@ def call_openai_api_stream(image, api_config, callback):
     key = api_config["API"]["KEY"]
     endpoint = api_config["API"]["ENDPOINT"]
     prompt = api_config["API"]["PROMPT"]
+    sys_prompt = api_config["API"]["SYS_PROMPT"]
+    temperature = float(api_config["API"]["TEMPERATURE"])
 
     try:
         # Initialize the client
@@ -77,24 +80,23 @@ def call_openai_api_stream(image, api_config, callback):
         # Call the API in streaming mode by adding stream=True
         response_stream = client.chat.completions.create(
             model=model,
-            temperature=0,
+            temperature=temperature,
             stream=True,
             messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": prompt
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": image_url
-                            }
+                {'role': 'system', 'content': sys_prompt},
+                {'role': 'user',
+                "content": [
+                    {
+                        "type": "text",
+                        "text": prompt
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": image_url
                         }
-                    ]
-                }
+                    }
+                ]}
             ]
         )
 

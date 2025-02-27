@@ -88,11 +88,17 @@ def call_gemini_api_client(image, api_config):
     key = api_config["API"]["KEY"]
     endpoint = api_config["API"]["ENDPOINT"]
     prompt = api_config["API"]["PROMPT"]
+    sys_prompt = api_config["API"]["SYS_PROMPT"]
+    temperature = float(api_config["API"]["TEMPERATURE"])
 
     try:
         client = genai.Client(api_key=key)
         response = client.models.generate_content(
             model=model, 
+            config=types.GenerateContentConfig(
+                temperature=temperature,
+                system_instruction=sys_prompt
+            ),
             contents=[prompt, image]
         )
         formatted_text = response.text
@@ -110,11 +116,17 @@ def call_gemini_api_stream(image, api_config, callback):
     key = api_config["API"]["KEY"]
     endpoint = api_config["API"]["ENDPOINT"]
     prompt = api_config["API"]["PROMPT"]
+    sys_prompt = api_config["API"]["SYS_PROMPT"]
+    temperature = float(api_config["API"]["TEMPERATURE"])
 
     try:
         client = genai.Client(api_key=key)
         response = client.models.generate_content_stream(
             model=model, 
+            config=types.GenerateContentConfig(
+                temperature=temperature,
+                system_instruction=sys_prompt
+            ),
             contents=[prompt, image]
         )
         for chunk in response:

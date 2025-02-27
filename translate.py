@@ -37,7 +37,7 @@ if __name__ == "__main__":
         # Change the working directory to the script's directory
         os.chdir(script_dir)
 
-        image = Image.open("screenshot.png")
+        image = Image.open("image.png")
         # Now you can work with the image object
         print(f"Image size: {image.size}")
         print(f"Image mode: {image.mode}")
