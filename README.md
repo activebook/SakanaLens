@@ -1,54 +1,83 @@
 # SakanaLens
- Automatic Translation From Japanese to English
 
-Use ctrl + t to trigger the translation.
-You don't need to leave the app you're using.
-It will automatically translate the text on the screen of your running app.
+## Automatic Japanese-to-English Translation
 
-# How to use
-- 1. Download the source and python3 -r requirements.txt
-- 2. Open the app and grant the app or terminal(if run on it) to Accessibility on Privacy & Security.
-- 3. Change api_template.json5 to api.json5 and set your own api key.
-- 4. Run the app and enjoy! (ctrl + t to trigger the translation)
- 
- **Warning!** This app **cannot be run on Windows**.
- ```
- Now can only run on macOS.
- You must grant the app or terminal(if run on it) to Accessibility on Privacy & Security.
- ```
+**SakanaLens** enables seamless translation of Japanese text to English in any active window. With a simple **Ctrl + T** shortcut, you can translate on-screen text without switching applications.
 
-# About the speech 
+---
+
+## ✨ Features
+- **Instant Translation**: Press **Ctrl + T** to trigger translation.
+- **Stay Focused**: No need to leave the app you're using.
+- **Screen Text Detection**: Automatically translates visible text in the active application.
+- **Speech Support**: Converts translated text into speech (English & Chinese only, via Alibaba DashScope).
+
+---
+
+## 🚀 Installation & Setup
+### **Step 1: Install Dependencies**
+```sh
+pip3 install -r requirements.txt
 ```
-This app uses the **Alibaba DashScope** to do Text-to-Speech.
-Keep in mind that tokens consumed by it are not free.
-It supports English and Chinese, but not Japanese.
+### **Step 2: Grant Accessibility Permissions**
+To function properly, SakanaLens requires accessibility permissions.
+- Open **System Preferences** → **Privacy & Security** → **Accessibility**.
+- Add either the app or the terminal if running from the command line.
+
+### **Step 3: Set Up API Key**
+- Rename `api_template.json5` to `api.json5`.
+- Edit `api.json5` and insert your API key.
+
+### **Step 4: Run the Application**
+```sh
+python3 sakana_lens.py
+```
+- Press **Ctrl + T** to trigger translation.
+
+---
+
+## ⚠️ Compatibility
+**SakanaLens is currently only supported on macOS.**
+```sh
+⚠️ This app **CANNOT** run on Windows.
+⚠️ You **MUST** grant accessibility permissions for the app or terminal.
 ```
 
-## **Show cases**
+---
 
-> Click the image below to watch the video: 👇👇
+## 🎤 Text-to-Speech (TTS) Support
+- Utilizes **Alibaba DashScope** for TTS.
+- Supports **English and Chinese**.
+- **Japanese TTS is not supported**.
+- **Note:** Using DashScope for TTS consumes tokens, which may incur costs.
 
-- **Tip1**: Scan website and translate it to English 🛜.
+---
 
+## 📺 Showcase
+### **🔎 Webpage Translation**
+Translate website text into English effortlessly. 🛜
 [![Watch the video](https://img.youtube.com/vi/sbTPrqqoixQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=sbTPrqqoixQ)
 
-- **Tip2**: Scan manga and translate it to English with the 💬 Speech 💬.
-
+### **📖 Manga Translation with Speech**
+Experience manga translation with text-to-speech functionality. 💬
 [![Watch the video](https://img.youtube.com/vi/fpw661mpBYI/maxresdefault.jpg)](https://www.youtube.com/watch?v=fpw661mpBYI)
 
-
-**Helper for web translation**
-
+### **🖥️ Additional Use Cases**
+#### **Web Translation Helper**
 ![SakanaLens Case2](showcase/case2.jpg)
 
-**Helper for reading**
-
+#### **Reading Assistance**
 ![SakanaLens Case3](showcase/case3.jpg)
+![SakanaLens Case6](showcase/case6.jpg)
 
-![SakanaLens Case3](showcase/case6.jpg)
+#### **Gaming Support**
+![SakanaLens Case4](showcase/case4.jpg)
+![SakanaLens Case5](showcase/case5.jpg)
 
-**Helper for gaming**
+---
 
-![SakanaLens Case3](showcase/case4.jpg)
+## 🛠️ Contribution & Support
+Feel free to contribute to this project! If you encounter issues, please open an [issue](https://github.com/Activebook/SakanaLens/issues) or submit a pull request.
 
-![SakanaLens Case3](showcase/case5.jpg)
+Happy translating! 🎉
+
