@@ -34,8 +34,10 @@
     "WIN": {
         "TEXT_FONT": ["Courier New", "14"],
         "WIDTH": "400", // win width
-        "HEIGHT": "1000", // win height
-        "POSITION": "right" // left, right
+        "HEIGHT": "800", // win height
+        "POSITION": "right", // left, right
+        // How to use, don't need to change it
+        "HOWTO": "How to use:\n\nPress [Ctrl+T] in any Text Window to start the automatic translation task.\n\nPress [Ctrl+Cmd+T] to choose the specific area for automatic translation.\n"
     },
 
     "DEBUG": {

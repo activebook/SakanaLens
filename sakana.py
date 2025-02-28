@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter import scrolledtext
 from AppKit import NSApplication, NSWorkspace
 from Cocoa import NSEvent, NSKeyDownMask
@@ -16,9 +17,14 @@ import os
 import tempfile
 import pygetwindow as gw
 import pyautogui
+import tooltip
 import translate
 import config
 
+APP_TITLE = "Sakana Lens 日本語の自動翻訳"
+# Constants for keyboard shortcut events
+APP_EVENT_CT = "app.shortcut.ctrl_t.task"  # Event for Ctrl+T
+APP_EVENT_CMT = "app.shortcut.ctrl_cmd_t.special"  # Event for Ctrl+Cmd+T
 
 # this doesn't work on python3.13
 '''
@@ -42,70 +48,86 @@ def capture_window():
 '''
 
 # PyObjC approach: Python script to capture the active window screenshot
-def capture_window(api_config):
-    try:
-        
-        # Get front window info
-        front_app = NSWorkspace.sharedWorkspace().frontmostApplication()
-        front_app_name = front_app.localizedName()
-        
-        # Get windows from front app
-        window_list = Quartz.CGWindowListCopyWindowInfo(
-            Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements,
-            Quartz.kCGNullWindowID)
-            
-        windows = [window for window in window_list if window['kCGWindowOwnerName'] == front_app_name]
-        
-        if not windows:
-            return None
-            
-        # Get the topmost window
-        window = windows[-1]
-        bounds = window['kCGWindowBounds']
-        # Convert coordinates to integers
-        x = int(bounds['X'])
-        y = int(bounds['Y'])
-        width = int(bounds['Width'])
-        height = int(bounds['Height'])
-        
-        # used for debugging
-        # using macOS's built-in screenshot highlighting capability. 
-        # We can use the screencapture command-line tool with its interactive mode to highlight the window temporarily
-        '''
-        # Use CoreGraphics to draw a temporary red border
-        cg_context = Quartz.CGDisplayCreateImageForRect(
-            Quartz.CGMainDisplayID(),
-            Quartz.CGRectMake(x, y, width, height)
-        )
-        
-        # Create a temporary file for the overlay
-        temp_dir = tempfile.gettempdir()
-        temp_file = os.path.join(temp_dir, "window_overlay.png")
-        
-        # Take a screenshot with the built-in highlight feature
-        # This will briefly highlight the window
-        subprocess.run([
-            "screencapture",
-            "-w",  # Window capture moed
-            "-o",  # Don't include shadow
-            temp_file
-        ])
-        
-        print(f"Debug: Screenshot saved to {temp_file}")
-        
-        # Slight delay after highlight
-        time.sleep(0.5)
-        '''
+def capture_window(api_config, message):
 
-        screenshot = pyautogui.screenshot(region=(x, y, width, height))   
-        temp_file = api_config["DEBUG"]["SCREENSHOT"]
-        if temp_file != "":
-            # Print information for debugging
-            print(f"Front app: {front_app_name}")
-            print(f"Window detected: {front_app_name}")
-            print(f"Position: X={x}, Y={y}, Width={width}, Height={height}")
-            screenshot.save(temp_file)
-        return screenshot
+    temp_file = api_config["DEBUG"]["SCREENSHOT"]
+    try:
+        # print("Ctrl+T pressed")
+        if message == APP_EVENT_CT:
+            # Get front window info
+            front_app = NSWorkspace.sharedWorkspace().frontmostApplication()
+            front_app_name = front_app.localizedName()
+            
+            # Get windows from front app
+            window_list = Quartz.CGWindowListCopyWindowInfo(
+                Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements,
+                Quartz.kCGNullWindowID)
+                
+            windows = [window for window in window_list if window['kCGWindowOwnerName'] == front_app_name]            
+            if not windows: return None
+                
+            # Get the topmost window (retrieve the last one which contains text)
+            window = windows[-1]
+            bounds = window['kCGWindowBounds']
+            # Convert coordinates to integers
+            x,y,width,height = int(bounds['X']),int(bounds['Y']),int(bounds['Width']),int(bounds['Height'])
+
+            # Use CoreGraphics to draw a temporary red border
+            '''
+            cg_context = Quartz.CGDisplayCreateImageForRect(
+                Quartz.CGMainDisplayID(),
+                Quartz.CGRectMake(x, y, width, height)
+            )
+            '''
+            
+            screenshot = pyautogui.screenshot(region=(x, y, width, height))   
+            if temp_file != "":
+                # Print information for debugging
+                print(f"Front app: {front_app_name}")
+                print(f"Window detected: {front_app_name}")
+                print(f"Position: X={x}, Y={y}, Width={width}, Height={height}")
+                print(f"Screenshot saved to {temp_file}")
+                screenshot.save(temp_file)
+            return screenshot
+
+        # print("Ctrl+Cmd+T pressed")
+        elif message == APP_EVENT_CMT:
+            # using macOS's built-in screenshot highlighting capability. 
+            # We can use the screencapture command-line tool with its interactive mode to highlight the window temporarily
+            # Create a temporary file for the overlay
+            temp_dir = tempfile.gettempdir()
+            temp_file = os.path.join(temp_dir, temp_file)
+
+            try:
+                # Check if file exists before deleting
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+            except Exception as e:
+                pass
+            
+            # Take a screenshot with the built-in highlight feature
+            # This will briefly highlight the window
+            result = subprocess.run([
+                "screencapture",
+                "-i",  # Capture screen interactively, by selection or window
+                #"-w",  # Window capture mode
+                #"-s", # only window mode
+                "-o",  # Don't include shadow
+                "-x",  # Don't play sounds
+                temp_file
+            ])
+
+            # Check return code (0 typically means success)
+            if result.returncode == 0 and os.path.exists(temp_file) and os.path.getsize(temp_file) > 0:
+                # Print information for debugging
+                print(f"Screenshot saved to {temp_file}")
+                screenshot = Image.open(temp_file)
+                return screenshot
+
+            return None
+        else:
+            return None
+        
     except Exception as e:
         print(f"Error capturing window: {e}")
         return None
@@ -127,14 +149,14 @@ def simulate_speech(text, api_config):
     '''
 
 # Function to process screenshot and update UI
-def process_capture_window_text(api_config, stream_call=None):
-    screenshot = capture_window(api_config)
+def process_capture_window_text(api_config, message, stream_call=None):
+    screenshot = capture_window(api_config, message)
     if screenshot:
         # Call Gemini API
         formatted_text = simulate_ai_api(screenshot, api_config, stream_call)
         return formatted_text
     else:
-        return "Nothing to translate"
+        return None
 
 
 class KeyListener:
@@ -143,21 +165,34 @@ class KeyListener:
         self.monitor = None
         self.running = True
         
+    """
+    Handles keyboard events and puts corresponding task events into the event queue based on the key combination pressed.
+
+    ctrl + t: APP_EVENT_CT
+    ctrl + cmd + t: APP_EVENT_CMT
+    """
     def handle_event(self, event):
         # Get the key information
         key_char = event.characters()
         key_code = event.keyCode()
         modifiers = event.modifierFlags()
         
-        # Check for Ctrl+T
+        # Define modifier key masks
         control_key_mask = (1 << 18)  # NSControlKeyMask
-        if key_code == 17 and (modifiers & control_key_mask):            
+        command_key_mask = (1 << 20)  # NSCommandKeyMask
+        
+        # Check for Ctrl+T
+        if key_code == 17 and (modifiers & control_key_mask) and not (modifiers & command_key_mask):            
             print("Ctrl+T was pressed!")
-            self.event_queue.put("TaskEvent")
+            self.event_queue.put(APP_EVENT_CT)
+        # Check for Ctrl+Cmd+T
+        elif key_code == 17 and (modifiers & control_key_mask) and (modifiers & command_key_mask):
+            print("Ctrl+Cmd+T was pressed!")
+            self.event_queue.put(APP_EVENT_CMT)  # Different event for Ctrl+Cmd+T
         else:
             #self.event_queue.put(f"Key: {key_char}, Code: {key_code}, Modifiers: {modifiers}")
             pass
-    
+
     def start(self):
         # Set up a global monitor for key events
         mask = NSKeyDownMask
@@ -195,9 +230,6 @@ class CocoaAppThread(threading.Thread):
         
         # Release the pool
         del pool
-
-APP_TITLE = "Sakana Lens 日本語の自動翻訳"
-APP_TIPS = """Press [Ctrl+T] on any Text Window to trigger the automatic translation task"""
 
 class TkinterApp:
     def __init__(self, root):
@@ -241,22 +273,27 @@ class TkinterApp:
         self.text_box.vbar.config(width=2)  # Sets scrollbar width (thickness) in pixels
         self.text_box.pack(padx=5, pady=(5,0), fill=tk.BOTH, expand=True)
         
-        # Add a button to stop monitoring
-        #self.stop_button = tk.Button(root, text="Stop", command=self.stop_monitoring)
-        #self.stop_button.pack(pady=10)
+        # Add a button(no border) to show tips
+        # Build the file path to image
+        qmark_path = os.path.dirname(os.path.realpath(__file__)) + "/question_mark.png"
+        self.qmark_img = tk.PhotoImage(file=qmark_path)
+        self.tips_btn = tk.Label(root, image=self.qmark_img, bg=self.text_box.cget("bg"), borderwidth=0, highlightthickness=0)
+        self.tips_btn.place(relx=0.96, rely=0.96, anchor="se")
 
-        # Customized label
-        self.tips_var = tk.StringVar(value=APP_TIPS)
-        self.tips = tk.Label(
-            root,
-            textvariable=self.tips_var,
-            font=("Arial", 14),  # Font family, size, and style
-            fg="lightyellow",                  # Text color (foreground)
-            wraplength=360,  # Wrap text after 250 pixels
-            justify="left",   # Align text (left, center, or right)
-            padx=0, pady=0
+        # bind the tooltip to the button
+        tooltip_text = self.api_config["WIN"]["HOWTO"]
+        self.dync_tooltip = tooltip.DynamicTooltip(
+            self.tips_btn, 
+            text=tk.StringVar(value=tooltip_text),
+            bg_color="#2c2c2c",
+            text_color="#ffffff",
+            font=("Helvetica", 12),
+            duration=4000
         )
-        self.tips.pack(pady=(0,5))  # Add some vertical padding
+
+        # Spinner (Progressbar in indeterminate mode)
+        self.spinner_bar = ttk.Progressbar(root, mode="indeterminate", length=window_width/2)
+        self.spinner_bar.pack(pady=(0,0))        
         
         # Create a queue for thread communication
         self.event_queue = queue.Queue()
@@ -288,8 +325,8 @@ class TkinterApp:
         self.start_thread(self.poll_result_queue)
 
 
-    def start_thread(self, func):
-        thread = threading.Thread(target=func, args=())
+    def start_thread(self, func, args=()):
+        thread = threading.Thread(target=func, args=args)
         thread.daemon = True
         thread.start()
         return thread
@@ -302,14 +339,16 @@ class TkinterApp:
         # Process event queue
         while True:
             message = self.event_queue.get()
-            if message == "TaskEvent":
-                self.tips_var.set("Processing OCR and Translation ...")
+            if message == APP_EVENT_CT or message == APP_EVENT_CMT:
+                # Show the spinner and update status
+                self.spinner_bar.start()  # Start the indeterminate animation                
                 if self.worker_thread and self.worker_thread.is_alive():
-                    self.text_box.insert(tk.END, "Processing in progress. Please wait.\n")
-                    self.text_box.see(tk.END)
+                    #self.text_box.insert(tk.END, "Processing in progress. Please wait.\n")
+                    #self.text_box.see(tk.END)
                     continue
-                # Create and start the worker thread
-                self.worker_thread = self.start_thread(self.run_process_and_get_response)
+                else:
+                    # Create and start the worker thread
+                    self.worker_thread = self.start_thread(self.run_process_and_get_response, (message,))                    
 
     """
     Continuously processes items from the result queue and updates the text box.
@@ -336,7 +375,7 @@ class TkinterApp:
             self.text_box.insert(tk.END, "App stopped.\n")
             self.text_box.see(tk.END)
     
-    def run_process_and_get_response(self):
+    def run_process_and_get_response(self, message):
         # This runs in the worker thread
         stream = self.api_config['API']['STREAM']
         stream = stream.lower()
@@ -344,16 +383,20 @@ class TkinterApp:
         # If not stream mode, put the result into the result queue
         if not stream_result:
             # time-consuming function, no streaming
-            formatted_text = process_capture_window_text(self.api_config)  
+            formatted_text = process_capture_window_text(self.api_config, message)  
             # Clear the text box
             self.text_box.delete(1.0, tk.END)
             # Directly put the result into the result queue
             self.result_queue.put(formatted_text)  
-            # Reset tips
-            self.tips_var.set(APP_TIPS)
+            # Reset spinner
+            self.spinner_bar.stop()
         else:
             # time-consuming function, with streaming
-            process_capture_window_text(self.api_config, self.stream_response_call)
+            formatted_text = process_capture_window_text(self.api_config, message, self.stream_response_call)
+            if formatted_text is None:
+                # Nothing to translate (either user cancelled the capture or no text was detected)
+                # Reset spinner
+                self.spinner_bar.stop()
     
     # Stream response callback
     def stream_response_call(self, text, end=False):
@@ -371,7 +414,8 @@ class TkinterApp:
             # If it’s the end state, insert the text into the text box, update the prompt message, and delete the counter.
             self.text_box.insert(tk.END, text + "\n")
             self.text_box.see(tk.END)
-            self.tips_var.set(APP_TIPS)
+            # Reset spinner
+            self.spinner_bar.stop()
             # Remove the counter attribute when done
             del self._stream_response_call_count
             # Call speech
