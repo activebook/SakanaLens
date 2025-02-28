@@ -26,9 +26,16 @@ It supports English and Chinese, but not Japanese.
 
 ## **Show cases**
 
-**Click the image below to watch the video:**
+> Click the image below to watch the video: 👇👇
+
+- **Tip1**: Scan website and translate it to English 🛜.
 
 [![Watch the video](https://img.youtube.com/vi/sbTPrqqoixQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=sbTPrqqoixQ)
+
+- **Tip2**: Scan manga and translate it to English with the 💬 Speech 💬.
+
+[![Watch the video](https://img.youtube.com/vi/fpw661mpBYI/maxresdefault.jpg)](https://www.youtube.com/watch?v=fpw661mpBYI)
+
 
 **Helper for web translation**
 
