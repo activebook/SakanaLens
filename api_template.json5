@@ -21,7 +21,16 @@
       "TEMPERATURE": "0.8" // Temperature for creativity (0.0 - 1.0 float)
     },
     
-    
+    // Alibaba DashScope API key and Model for speech
+
+    "SPEECH": {
+      "STREAM": "True", // Stream the output or not(no speech)
+      "LANG": "en", // What language you want to speech out (Support: English|en, Chinese|cn, Japanese|jp, etc.)
+      "MODEL": "sambert-eva-v1", // Change this to your own model, support different languages(English|sambert-eva-v1, Chinese|sambert-zhimiao-emo-v1, Japanese|None, etc.)
+      "KEY": "", // Don't forget to change this to your own API key
+      "RATE": "1.25" // Speech rate: 0.5 - 2.0 float
+    },
+
     "WIN": {
         "TEXT_FONT": ["Courier New", "14"],
         "WIDTH": "400", // win width

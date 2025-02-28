@@ -116,6 +116,16 @@ def simulate_ai_api(image, api_config, stream_call=None):
     english_text = translate.call_real_api(image, api_config, stream_call)
     return english_text
 
+# Function to simulate speech
+def simulate_speech(text, api_config):
+    thread = translate.call_speech(text, api_config)
+    # we don't need to wait for the thread to finish
+    # because the mainloop will handle it
+    '''
+    if thread:
+        thread.join()
+    '''
+
 # Function to process screenshot and update UI
 def process_capture_window_text(api_config, stream_call=None):
     screenshot = capture_window(api_config)
@@ -175,7 +185,12 @@ class CocoaAppThread(threading.Thread):
         # Create and run the Cocoa application
         NSApplication.sharedApplication()
         self.listener.start()
-        AppHelper.runEventLoop()
+
+        '''
+        Only use Tkinter's event loop (root.mainloop())
+        This should significantly reduce your CPU usage by eliminating the competing event loops.
+        '''
+        #AppHelper.runEventLoop()
         
         # Release the pool
         del pool
@@ -250,6 +265,19 @@ class TkinterApp:
         # Create a key listener
         self.listener = KeyListener(self.event_queue)
         
+        # Start the Cocoa app and queue checking (time consuming tasks) in a separate thread
+        self.start_thread(self.start_async_task)
+
+    
+    """
+    Starts the Cocoa application and schedules queue checking tasks in separate threads.
+
+    This method initializes and starts a Cocoa application in a separate thread using
+    the CocoaAppThread class. It also schedules the polling of event and result queues
+    by starting separate threads for each using the start_thread method.
+    """
+    def start_async_task(self):
+        
         # Start the Cocoa app in a separate thread
         self.app_thread = CocoaAppThread(self.listener)
         self.app_thread.start()
@@ -258,9 +286,9 @@ class TkinterApp:
         self.start_thread(self.poll_event_queue)
         self.start_thread(self.poll_result_queue)
 
-    
+
     def start_thread(self, func):
-        thread = threading.Thread(target=func)
+        thread = threading.Thread(target=func, args=())
         thread.daemon = True
         thread.start()
         return thread
@@ -282,6 +310,13 @@ class TkinterApp:
                 # Create and start the worker thread
                 self.worker_thread = self.start_thread(self.run_process_and_get_response)
 
+    """
+    Continuously processes items from the result queue and updates the text box.
+
+    Retrieves formatted text from the result queue and inserts it into the text box
+    widget. Ensures the text box view is updated to show the latest inserted text.
+    This method runs indefinitely in a separate thread.
+    """
     def poll_result_queue(self):
         # Process result queue
         while True:
@@ -338,6 +373,9 @@ class TkinterApp:
             self.tips_var.set(APP_TIPS)
             # Remove the counter attribute when done
             del self._stream_response_call_count
+            # Call speech
+            content = self.text_box.get("1.0", tk.END)
+            simulate_speech(content, self.api_config)
 
 
 
