@@ -187,6 +187,7 @@ class CocoaAppThread(threading.Thread):
         self.listener.start()
 
         '''
+        Here's the high cpu usage issue:
         Only use Tkinter's event loop (root.mainloop())
         This should significantly reduce your CPU usage by eliminating the competing event loops.
         '''
