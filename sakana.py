@@ -259,6 +259,7 @@ class TkinterApp:
             y = (screen_height - window_height) // 2
             root.geometry(f"{window_width}x{window_height}+{x}+{y}")
         
+        
         # Create a text widget to display key events
         text_font = self.api_config['WIN']['TEXT_FONT']
         self.text_box = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=40, height=30, 
@@ -271,14 +272,45 @@ class TkinterApp:
 
         # Access the vertical scrollbar
         self.text_box.vbar.config(width=2)  # Sets scrollbar width (thickness) in pixels
-        self.text_box.pack(padx=5, pady=(5,0), fill=tk.BOTH, expand=True)
-        
+        self.text_box.pack(padx=5, pady=(5,0), fill=tk.BOTH, expand=True)       
+
         # Add a button(no border) to show tips
         # Build the file path to image
         qmark_path = os.path.dirname(os.path.realpath(__file__)) + "/question_mark.png"
         self.qmark_img = tk.PhotoImage(file=qmark_path)
         self.tips_btn = tk.Label(root, image=self.qmark_img, bg=self.text_box.cget("bg"), borderwidth=0, highlightthickness=0)
         self.tips_btn.place(relx=0.96, rely=0.96, anchor="se")
+
+        """
+        Handles the event when the text widget is modified.
+        Checks the content of the text widget and manages the display state of the tips button based on whether the content is empty.        
+        """
+        def on_text_modified(event):
+            widget = event.widget            
+            # Check content whenever a modification occurs
+            content = widget.get("1.0", "end-1c")
+            if len(content) == 0:                
+                # Hide button momentarily
+                #self.tips_btn.place_forget()
+                # Force display update
+                #root.update_idletasks()                
+                # Show button again
+                #self.tips_btn.place(relx=0.96, rely=0.96, anchor="se")
+                # Just lift the button to the top to appear
+                self.tips_btn.lift()
+            else:
+                 # Hide button momentarily
+                #self.tips_btn.place_forget()
+                # Force display update
+                #root.update_idletasks()                
+                #self.tips_btn.place(x=-100, y=-100)
+                # Just lower the button to the bottom to disappear
+                self.tips_btn.lower(widget)
+            # Now reset the modified flag at the end
+            widget.edit_modified(False) 
+                
+        self.text_box.bind("<<Modified>>", on_text_modified)
+
 
         # bind the tooltip to the button
         tooltip_text = self.api_config["WIN"]["HOWTO"]
@@ -306,7 +338,7 @@ class TkinterApp:
         # Start the Cocoa app and queue checking (time consuming tasks) in a separate thread
         self.start_thread(self.start_async_task)
 
-    
+
     """
     Starts the Cocoa application and schedules queue checking tasks in separate threads.
 
