@@ -37,6 +37,7 @@
         "HEIGHT": "800", // win height
         "POSITION": "right", // left, right
         // How to use, don't need to change it
+        "INFO": "Sakana Lens\n自動翻訳ツール (日本語対応)\n\nVersion: 2.0\nAuthor: Charles Liu\nLicense: Apache-2.0\n\nSystem Requirements:\n · Supported OS: macOS only\n · Python Ver: Python 3.9+",
         "HOWTO": "How to use:\n\nPress [Ctrl+T] in any Text Window to start the automatic translation task.\n\nPress [Ctrl+Cmd+T] to choose the specific area for automatic translation.\n\nNo need to switch window."
     },
 
