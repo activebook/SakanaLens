@@ -2,15 +2,16 @@
 
 ## Automatic Japanese-to-English Translation
 
-**SakanaLens** enables seamless translation of Japanese text to English in any active window. With a simple **Ctrl + T** shortcut, you can translate on-screen text without switching applications.
+**SakanaLens** enables seamless translation of Japanese text to English in any active window. With a simple **Ctrl + T** shortcut, or **Ctrl + Cmd + T** to select a specific area, you can translate on-screen text without switching applications.
 
 ---
 
 ## ✨ Features
-- **Instant Translation**: Press **Ctrl + T** to trigger translation.
-- **Stay Focused**: No need to leave the app you're using.
-- **Screen Text Detection**: Automatically translates visible text in the active application.
-- **Speech Support**: Converts translated text into speech (English & Chinese only, via Alibaba DashScope).
+- **Instant Translation**: Press **Ctrl + T** to trigger translation of the entire active window. :zap:
+- **Selective Translation**: Use **Ctrl + Cmd + T** to select a specific area or scope for translation, instead of the whole window. :scissors:
+- **Stay Focused**: No need to leave the app you're using. :eyes:
+- **Screen Text Detection**: Automatically translates visible text in the active application. :mag:
+- **Speech Support**: Converts translated text into speech (English & Chinese only, via Alibaba DashScope). :sound:
 
 ---
 
