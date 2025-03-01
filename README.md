@@ -53,6 +53,11 @@ python3 sakana_lens.py
 
 ---
 
+## 🟢 New UI | 🎉 Version 2.0 released 
+![SakanaLens New UI](showcase/UI.png)
+
+---
+
 ## 📺 Showcase
 ### **🔎 Webpage Translation**
 Translate website text into English effortlessly. 🛜
