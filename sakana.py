@@ -271,15 +271,22 @@ class TkinterApp:
         ) 
 
         # Access the vertical scrollbar
-        self.text_box.vbar.config(width=2)  # Sets scrollbar width (thickness) in pixels
-        self.text_box.pack(padx=5, pady=(5,0), fill=tk.BOTH, expand=True)       
+        #self.text_box.vbar.config(width=0)  # Sets scrollbar width (thickness) in pixels
+        self.text_box.vbar.pack_forget() # Hide the vertical scrollbar to make it more slight
+        self.text_box.pack(padx=0, pady=(0,0), fill=tk.BOTH, expand=True)  
+
+        # Add a button(no border) to show info
+        imark_path = os.path.dirname(os.path.realpath(__file__)) + "/info_mark.png"
+        self.imark_img = tk.PhotoImage(file=imark_path)
+        self.info_btn = tk.Label(root, image=self.imark_img, bg=self.text_box.cget("bg"), borderwidth=0, highlightthickness=0)
+        self.info_btn.place(relx=0.05, rely=0.95, anchor="sw")     
 
         # Add a button(no border) to show tips
         # Build the file path to image
         qmark_path = os.path.dirname(os.path.realpath(__file__)) + "/question_mark.png"
         self.qmark_img = tk.PhotoImage(file=qmark_path)
         self.tips_btn = tk.Label(root, image=self.qmark_img, bg=self.text_box.cget("bg"), borderwidth=0, highlightthickness=0)
-        self.tips_btn.place(relx=0.96, rely=0.96, anchor="se")
+        self.tips_btn.place(relx=0.95, rely=0.95, anchor="se")
 
         """
         Handles the event when the text widget is modified.
@@ -296,7 +303,9 @@ class TkinterApp:
                 #root.update_idletasks()                
                 # Show button again
                 #self.tips_btn.place(relx=0.96, rely=0.96, anchor="se")
+
                 # Just lift the button to the top to appear
+                self.info_btn.lift()
                 self.tips_btn.lift()
             else:
                  # Hide button momentarily
@@ -304,15 +313,29 @@ class TkinterApp:
                 # Force display update
                 #root.update_idletasks()                
                 #self.tips_btn.place(x=-100, y=-100)
+
                 # Just lower the button to the bottom to disappear
+                self.info_btn.lower(widget)
                 self.tips_btn.lower(widget)
+
             # Now reset the modified flag at the end
             widget.edit_modified(False) 
                 
         self.text_box.bind("<<Modified>>", on_text_modified)
 
 
-        # bind the tooltip to the button
+        # bind the tooltip to the info button
+        info_text = self.api_config["WIN"]["INFO"]
+        self.dync_info = tooltip.DynamicTooltip(
+            self.info_btn, 
+            text=tk.StringVar(value=info_text),
+            bg_color="#2c2c2c",
+            text_color="#ffffff",
+            font=("Helvetica", 12),
+            duration=4000
+        )
+
+        # bind the tooltip to the tips button
         tooltip_text = self.api_config["WIN"]["HOWTO"]
         self.dync_tooltip = tooltip.DynamicTooltip(
             self.tips_btn, 
