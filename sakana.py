@@ -26,6 +26,51 @@ APP_TITLE = "Sakana Lens 日本語の自動翻訳"
 APP_EVENT_CT = "app.shortcut.ctrl_t.task"  # Event for Ctrl+T
 APP_EVENT_CMT = "app.shortcut.ctrl_cmd_t.special"  # Event for Ctrl+Cmd+T
 
+# animate your tkinter window sliding in from the right side of the screen:
+def animate_window_from_right(window, final_x, start_y, width, height, animation_duration=0.1):
+    # Get screen width
+    screen_width = window.winfo_screenwidth()
+    
+    # Start position (off-screen to the right)
+    start_x = screen_width
+    
+    # Set initial window position and size
+    window.geometry(f"{width}x{height}+{start_x}+{start_y}")
+    window.update()
+    
+    # Calculate animation steps
+    steps = 30
+    delay = animation_duration / steps
+    distance_per_step = (start_x - final_x) / steps
+    
+    # Animate window sliding in
+    for step in range(steps + 1):
+        current_x = start_x - int(step * distance_per_step)
+        window.geometry(f"{width}x{height}+{current_x}+{start_y}")
+        window.update()
+        time.sleep(delay)
+
+# animate your tkinter window sliding in from the left side of the screen
+def animate_window_from_left(window, final_x, start_y, width, height, animation_duration=0.1):
+    # Start position (off-screen to the left)
+    start_x = -width
+    
+    # Set initial window position and size
+    window.geometry(f"{width}x{height}+{start_x}+{start_y}")
+    window.update()
+    
+    # Calculate animation steps
+    steps = 20
+    delay = animation_duration / steps
+    distance_per_step = (final_x - start_x) / steps
+    
+    # Animate window sliding in
+    for step in range(steps + 1):
+        current_x = start_x + int(step * distance_per_step)
+        window.geometry(f"{width}x{height}+{current_x}+{start_y}")
+        window.update()
+        time.sleep(delay)
+
 # this doesn't work on python3.13
 '''
 # Function to capture the active window screenshot
@@ -238,28 +283,8 @@ class TkinterApp:
 
         self.root = root
         root.title(APP_TITLE)
+        root.withdraw()  # Hide window initially
 
-        # Get screen dimensions
-        screen_width = root.winfo_screenwidth()
-        screen_height = root.winfo_screenheight()
-
-        # Set window size and position
-        window_width = int(self.api_config['WIN']['WIDTH'])
-        window_height = int(self.api_config['WIN']['HEIGHT'])
-        window_pos = self.api_config['WIN']['POSITION']
-        if window_pos == "left":
-            y = (screen_height - window_height) // 2
-            root.geometry(f"{window_width}x{window_height}+{0}+{y}")
-        elif window_pos == "right":
-            y = (screen_height - window_height) // 2
-            root.geometry(f"{window_width}x{window_height}+{screen_width-window_width+2}+{y}")
-        else:
-            # Center the window
-            x = (screen_width - window_width) // 2
-            y = (screen_height - window_height) // 2
-            root.geometry(f"{window_width}x{window_height}+{x}+{y}")
-        
-        
         # Create a text widget to display key events
         text_font = self.api_config['WIN']['TEXT_FONT']
         self.text_box = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=40, height=30, 
@@ -267,8 +292,7 @@ class TkinterApp:
                                                   padx=5,               # Horizontal padding inside the text area
                                                 pady=5,                # Vertical padding inside the text area)
                                                 highlightthickness=0, bd=0 # Remove border and no highlight
-                                                
-        ) 
+                                                ) 
 
         # Access the vertical scrollbar
         #self.text_box.vbar.config(width=0)  # Sets scrollbar width (thickness) in pixels
@@ -347,7 +371,7 @@ class TkinterApp:
         )
 
         # Spinner (Progressbar in indeterminate mode)
-        self.spinner_bar = ttk.Progressbar(root, mode="indeterminate", length=window_width/2)
+        self.spinner_bar = ttk.Progressbar(root, mode="indeterminate", length=200)
         self.spinner_bar.pack(pady=(0,0))        
         
         # Create a queue for thread communication
@@ -360,6 +384,39 @@ class TkinterApp:
         
         # Start the Cocoa app and queue checking (time consuming tasks) in a separate thread
         self.start_thread(self.start_async_task)
+
+        # Show the window with animation
+        self.show_window(root)
+
+    def show_window(self, root):
+        # Get screen dimensions
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+
+        # Set window size and position
+        window_width = int(self.api_config['WIN']['WIDTH'])
+        window_height = int(self.api_config['WIN']['HEIGHT'])
+        window_pos = self.api_config['WIN']['POSITION']
+        if window_pos == "left":
+            final_x = 0 # Leftcorner            
+            y = (screen_height - window_height) // 2
+            #root.geometry(f"{window_width}x{window_height}+{0}+{y}")
+            # Show window and animate
+            root.deiconify()
+            animate_window_from_left(root, final_x, y, window_width, window_height)
+        elif window_pos == "right":
+            final_x = (root.winfo_screenwidth() - window_width) # Rightcorner
+            y = (screen_height - window_height) // 2
+            #root.geometry(f"{window_width}x{window_height}+{screen_width-window_width+2}+{y}")
+            # Show window and animate
+            root.deiconify()
+            animate_window_from_right(root, final_x, y, window_width, window_height)
+        else:
+            # Center the window
+            x = (screen_width - window_width) // 2
+            y = (screen_height - window_height) // 2
+            root.deiconify()
+            root.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
 
     """
