@@ -97,6 +97,7 @@ Happy translating! 🎉
 
 --- 
 
+```json
 {
   "name": "Sakana Lens",
   "description": "自動翻訳ツール (日本語対応)",
