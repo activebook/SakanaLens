@@ -14,7 +14,6 @@ import objc
 import subprocess
 import os
 import tempfile
-import pygetwindow as gw
 import pyautogui
 import translate
 import config

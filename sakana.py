@@ -2,135 +2,84 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import scrolledtext
 from AppKit import NSApplication, NSWorkspace
-from Cocoa import NSEvent, NSKeyDownMask
 from PyObjCTools import AppHelper
 from PIL import Image
 import Quartz
-import time
 import threading
-import asyncio
 import Foundation
 import queue
-import objc
 import subprocess
 import os
+import sys
 import tempfile
-import pygetwindow as gw
 import pyautogui
+import winutil
 import tooltip
 import translate
 import config
+
+"""
+Custom handler for unraisable exceptions.
+
+This function filters out specific unraisable exceptions related to
+dummy thread finalization by checking the object's representation.
+If the exception is related to 'DeleteDummyThreadOnDel', it is ignored.
+For all other unraisable exceptions, the default system exception
+hook is used to handle them.
+
+Parameters:
+    unraisable (unraisablehookargs): The unraisable exception details.
+"""
+def my_unraisable_hook(unraisable):
+    # Filter out the dummy thread finalization error by checking the object's representation.
+    if "DeleteDummyThreadOnDel" in repr(unraisable.object):
+        # Ignore this error.
+        return
+    # For any other unraisable exception, use the default behavior.
+    sys.__excepthook__(unraisable.exc_type, unraisable.exc_value, unraisable.exc_traceback)
+
+sys.unraisablehook = my_unraisable_hook
+
 
 APP_TITLE = "Sakana Lens 日本語の自動翻訳"
 # Constants for keyboard shortcut events
 APP_EVENT_CT = "app.shortcut.ctrl_t.task"  # Event for Ctrl+T
 APP_EVENT_CMT = "app.shortcut.ctrl_cmd_t.special"  # Event for Ctrl+Cmd+T
-
-# animate your tkinter window sliding in from the right side of the screen:
-def animate_window_from_right(window, final_x, start_y, width, height, animation_duration=0.1):
-    # Get screen width
-    screen_width = window.winfo_screenwidth()
-    
-    # Start position (off-screen to the right)
-    start_x = screen_width
-    
-    # Set initial window position and size
-    window.geometry(f"{width}x{height}+{start_x}+{start_y}")
-    window.update()
-    
-    # Calculate animation steps
-    steps = 30
-    delay = animation_duration / steps
-    distance_per_step = (start_x - final_x) / steps
-    
-    # Animate window sliding in
-    for step in range(steps + 1):
-        current_x = start_x - int(step * distance_per_step)
-        window.geometry(f"{width}x{height}+{current_x}+{start_y}")
-        window.update()
-        time.sleep(delay)
-
-# animate your tkinter window sliding in from the left side of the screen
-def animate_window_from_left(window, final_x, start_y, width, height, animation_duration=0.1):
-    # Start position (off-screen to the left)
-    start_x = -width
-    
-    # Set initial window position and size
-    window.geometry(f"{width}x{height}+{start_x}+{start_y}")
-    window.update()
-    
-    # Calculate animation steps
-    steps = 20
-    delay = animation_duration / steps
-    distance_per_step = (final_x - start_x) / steps
-    
-    # Animate window sliding in
-    for step in range(steps + 1):
-        current_x = start_x + int(step * distance_per_step)
-        window.geometry(f"{width}x{height}+{current_x}+{start_y}")
-        window.update()
-        time.sleep(delay)
-
-# this doesn't work on python3.13
-'''
-# Function to capture the active window screenshot
-def capture_window():
-    try:
-        # Get the active window (assuming it's the game)
-        active_window = gw.getActiveWindow()
-        if not active_window:
-            return None
-        
-        # Get window coordinates
-        left, top, width, height = active_window.left, active_window.top, active_window.width, active_window.height
-        
-        # Capture screenshot of the window
-        screenshot = pyautogui.screenshot(region=(left, top, width, height))
-        return screenshot
-    except Exception as e:
-        print(f"Error capturing window: {e}")
-        return None
-'''
+APP_EVENT_CMR = "app.shortcut.ctrl_cmd_r.special"  # Event for Ctrl+Cmd+R
 
 # PyObjC approach: Python script to capture the active window screenshot
 def capture_window(api_config, message):
 
     temp_file = api_config["DEBUG"]["SCREENSHOT"]
     try:
+        # Get front window info
+        front_app = NSWorkspace.sharedWorkspace().frontmostApplication()
+        front_app_name = front_app.localizedName()
+
         # print("Ctrl+T pressed")
         if message == APP_EVENT_CT:
-            # Get front window info
-            front_app = NSWorkspace.sharedWorkspace().frontmostApplication()
-            front_app_name = front_app.localizedName()
+            last_region = winutil.region_manager.get_last_region()
+            if last_region is None:    
+                # Get windows from front app
+                window_list = Quartz.CGWindowListCopyWindowInfo(
+                    Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements,
+                    Quartz.kCGNullWindowID)
+                    
+                windows = [window for window in window_list if window['kCGWindowOwnerName'] == front_app_name]            
+                if not windows: return None
+                    
+                # Get the topmost window (retrieve the last one which contains text)
+                window = windows[-1]
+                bounds = window['kCGWindowBounds']
+                # Convert coordinates to integers
+                x,y,width,height = int(bounds['X']),int(bounds['Y']),int(bounds['Width']),int(bounds['Height'])
+                last_region = (x, y, width, height)
             
-            # Get windows from front app
-            window_list = Quartz.CGWindowListCopyWindowInfo(
-                Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements,
-                Quartz.kCGNullWindowID)
-                
-            windows = [window for window in window_list if window['kCGWindowOwnerName'] == front_app_name]            
-            if not windows: return None
-                
-            # Get the topmost window (retrieve the last one which contains text)
-            window = windows[-1]
-            bounds = window['kCGWindowBounds']
-            # Convert coordinates to integers
-            x,y,width,height = int(bounds['X']),int(bounds['Y']),int(bounds['Width']),int(bounds['Height'])
-
-            # Use CoreGraphics to draw a temporary red border
-            '''
-            cg_context = Quartz.CGDisplayCreateImageForRect(
-                Quartz.CGMainDisplayID(),
-                Quartz.CGRectMake(x, y, width, height)
-            )
-            '''
-            
-            screenshot = pyautogui.screenshot(region=(x, y, width, height))   
+            screenshot = pyautogui.screenshot(region=last_region)   
             if temp_file != "":
                 # Print information for debugging
-                print(f"Front app: {front_app_name}")
                 print(f"Window detected: {front_app_name}")
-                print(f"Position: X={x}, Y={y}, Width={width}, Height={height}")
+                print(f"Screen Position: {last_region}")
                 print(f"Screenshot saved to {temp_file}")
                 screenshot.save(temp_file)
             return screenshot
@@ -170,6 +119,36 @@ def capture_window(api_config, message):
                 return screenshot
 
             return None
+        
+        # print("Ctrl+Cmd+R pressed")
+        elif message == APP_EVENT_CMR:
+            
+            # Capture the selection region
+            region_color = api_config["WIN"]["REGION"]
+            scw = winutil.ScreenCaptureWindow(region_color)
+            # Block until the overlay window is destroyed
+            scw.wait()
+            
+            # This step is very important, it cannot interfere with the window switching
+            # Switch to the front app after closing the cover window
+            winutil.switch_to_app(front_app_name)
+
+            # No selected region
+            if scw.drawing_region is None:
+                return None
+            
+            # Get the drawing region            
+            winutil.region_manager.select_region(scw.drawing_region)
+            last_region = winutil.region_manager.get_last_region()
+            screenshot = pyautogui.screenshot(region=last_region)   
+            if temp_file != "":
+                # Print information for debugging
+                print(f"Window detected: {front_app_name}")
+                print(f"Screen Position: {last_region}")
+                print(f"Screenshot saved to {temp_file}")
+                screenshot.save(temp_file)
+            return screenshot
+            
         else:
             return None
         
@@ -202,54 +181,6 @@ def process_capture_window_text(api_config, message, stream_call=None):
         return formatted_text
     else:
         return None
-
-
-class KeyListener:
-    def __init__(self, event_queue):
-        self.event_queue = event_queue
-        self.monitor = None
-        self.running = True
-        
-    """
-    Handles keyboard events and puts corresponding task events into the event queue based on the key combination pressed.
-
-    ctrl + t: APP_EVENT_CT
-    ctrl + cmd + t: APP_EVENT_CMT
-    """
-    def handle_event(self, event):
-        # Get the key information
-        key_char = event.characters()
-        key_code = event.keyCode()
-        modifiers = event.modifierFlags()
-        
-        # Define modifier key masks
-        control_key_mask = (1 << 18)  # NSControlKeyMask
-        command_key_mask = (1 << 20)  # NSCommandKeyMask
-        
-        # Check for Ctrl+T
-        if key_code == 17 and (modifiers & control_key_mask) and not (modifiers & command_key_mask):            
-            print("Ctrl+T was pressed!")
-            self.event_queue.put(APP_EVENT_CT)
-        # Check for Ctrl+Cmd+T
-        elif key_code == 17 and (modifiers & control_key_mask) and (modifiers & command_key_mask):
-            print("Ctrl+Cmd+T was pressed!")
-            self.event_queue.put(APP_EVENT_CMT)  # Different event for Ctrl+Cmd+T
-        else:
-            #self.event_queue.put(f"Key: {key_char}, Code: {key_code}, Modifiers: {modifiers}")
-            pass
-
-    def start(self):
-        # Set up a global monitor for key events
-        mask = NSKeyDownMask
-        self.monitor = NSEvent.addGlobalMonitorForEventsMatchingMask_handler_(
-            mask, self.handle_event
-        )
-    
-    def stop(self):
-        # Remove the monitor
-        if self.monitor:
-            NSEvent.removeMonitor_(self.monitor)
-            self.monitor = None
 
 
 class CocoaAppThread(threading.Thread):
@@ -380,14 +311,23 @@ class TkinterApp:
         self.worker_thread = None
         
         # Create a key listener
-        self.listener = KeyListener(self.event_queue)
+        def on_key_press(event):
+            if event == winutil.NSKeyCTRLTMask:
+                self.event_queue.put(APP_EVENT_CT)
+            elif event == winutil.NSKeyCTRLCMDTMask:
+                self.event_queue.put(APP_EVENT_CMT)
+            elif event == winutil.NSKeyCTRLCMDRMask:
+                self.event_queue.put(APP_EVENT_CMR)
+            
+        self.key_listener = winutil.KeyListener(on_key_press)
         
         # Start the Cocoa app and queue checking (time consuming tasks) in a separate thread
         self.start_thread(self.start_async_task)
 
         # Show the window with animation
         self.show_window(root)
-
+            
+    # Show the window with animation
     def show_window(self, root):
         # Get screen dimensions
         screen_width = root.winfo_screenwidth()
@@ -403,14 +343,14 @@ class TkinterApp:
             #root.geometry(f"{window_width}x{window_height}+{0}+{y}")
             # Show window and animate
             root.deiconify()
-            animate_window_from_left(root, final_x, y, window_width, window_height)
+            winutil.animate_window_from_left(root, final_x, y, window_width, window_height)
         elif window_pos == "right":
             final_x = (root.winfo_screenwidth() - window_width) # Rightcorner
             y = (screen_height - window_height) // 2
             #root.geometry(f"{window_width}x{window_height}+{screen_width-window_width+2}+{y}")
             # Show window and animate
             root.deiconify()
-            animate_window_from_right(root, final_x, y, window_width, window_height)
+            winutil.animate_window_from_right(root, final_x, y, window_width, window_height)
         else:
             # Center the window
             x = (screen_width - window_width) // 2
@@ -429,8 +369,9 @@ class TkinterApp:
     def start_async_task(self):
         
         # Start the Cocoa app in a separate thread
-        self.app_thread = CocoaAppThread(self.listener)
-        self.app_thread.start()
+        # monitor the key events
+        self.app_key_thread = CocoaAppThread(self.key_listener)
+        self.app_key_thread.start()
         
         # Schedule the queue checking function
         self.start_thread(self.poll_event_queue)
@@ -451,7 +392,7 @@ class TkinterApp:
         # Process event queue
         while True:
             message = self.event_queue.get()
-            if message == APP_EVENT_CT or message == APP_EVENT_CMT:
+            if message == APP_EVENT_CT or message == APP_EVENT_CMT or message == APP_EVENT_CMR:
                 # Show the spinner and update status
                 self.spinner_bar.start()  # Start the indeterminate animation                
                 if self.worker_thread and self.worker_thread.is_alive():
@@ -480,12 +421,11 @@ class TkinterApp:
 
     def stop_monitoring(self):
         # Stop the listener
-        if hasattr(self, 'listener'):
-            self.listener.stop()
+        if hasattr(self, 'listener'):            
+            if self.key_listener:
+                self.key_listener.stop()
             AppHelper.stopEventLoop()
-            #self.stop_button.config(text="Monitoring Stopped", state=tk.DISABLED)
-            self.text_box.insert(tk.END, "App stopped.\n")
-            self.text_box.see(tk.END)
+            
     
     def run_process_and_get_response(self, message):
         # This runs in the worker thread

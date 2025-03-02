@@ -36,9 +36,10 @@
         "WIDTH": "400", // win width
         "HEIGHT": "800", // win height
         "POSITION": "right", // left, right
+        "REGION": "#CCFF00", // Neon green (#39FF14), bright yellow (#FFFF00), Cyan/Aqua (#00FFFF), Magenta/Hot Pink (#FF00FF), Orange (#FF7F00), Electric Blue (#0066FF), Lime (#CCFF00) 
         // How to use, don't need to change it
         "INFO": "Sakana Lens\n自動翻訳ツール (日本語対応)\n\nVersion: 2.0\nAuthor: Charles Liu\nLicense: Apache-2.0\n\nSystem Requirements:\n · Supported OS: macOS only\n · Python Ver: Python 3.9+",
-        "HOWTO": "How to use:\n\nPress [Ctrl+T] in any Text Window to start the automatic translation task.\n\nPress [Ctrl+Cmd+T] to choose the specific area for automatic translation.\n\nNo need to switch window."
+        "HOWTO": "How to use:\n\nPress [Ctrl+T] in any Text Window to start the automatic translation task.\n\nPress [Ctrl+Cmd+T] to choose the specific area for automatic translation.\n\nPress [Ctrl+Cmd+R] to select and lock a specific region; subsequent [Ctrl+T] presses will only translate that region.\n\nNo need to switch window."
     },
 
     "DEBUG": {
