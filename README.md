@@ -69,6 +69,11 @@ Translate website text into English effortlessly. 🛜
 Experience manga translation with text-to-speech functionality. 💬
 [![Watch the video](https://img.youtube.com/vi/fpw661mpBYI/maxresdefault.jpg)](https://www.youtube.com/watch?v=fpw661mpBYI)
 
+### **:lock: Region Locker**
+Press **Ctrl + Cmd + R** to select or define a specific region for translation, the next **Ctrl + T** presses will only translate text within that locked region.
+![SakanaLens RegionLocker](showcase/case5.jpg)
+![SakanaLens RegionLocker](showcase/case5.1.jpg)
+
 ### **🖥️ Additional Use Cases**
 #### **Web Translation Helper**
 ![SakanaLens Case2](showcase/case2.jpg)
@@ -79,7 +84,6 @@ Experience manga translation with text-to-speech functionality. 💬
 
 #### **Gaming Support**
 ![SakanaLens Case4](showcase/case4.jpg)
-![SakanaLens Case5](showcase/case5.jpg)
 
 ---
 
