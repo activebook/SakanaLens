@@ -39,11 +39,14 @@ python3 sakana_lens.py
 ---
 
 ## ⚠️ Compatibility
+
 **SakanaLens is currently only supported on macOS.**
-```sh
-⚠️ This app **CANNOT** run on Windows.
-⚠️ You **MUST** grant accessibility permissions for the app or terminal.
-```
+
+> **Note:**  
+> - This app **CANNOT** run on Windows.  
+> - You **MUST** grant **Accessibility permissions** for the app or terminal.  
+> - You **MUST** grant **Screen and System Audio Recording permissions** for the app or terminal.  
+> These permissions are required under **Privacy & Security settings** because the app needs access to the screen for clipping and screenshots, as well as system audio output.
 
 ---
 

@@ -129,6 +129,7 @@ def call_gemini_api_stream(image, api_config, callback):
             ),
             contents=[prompt, image]
         )
+        
         for chunk in response:
             callback(chunk.text, end=False)
         callback("", end=True)
@@ -136,4 +137,6 @@ def call_gemini_api_stream(image, api_config, callback):
     except Exception as e:
         callback(f"Request Error: {e}", end=True)
         return ""
-    
+    finally:
+        if 'response' in locals() and response: # Check if 'response' exists and is not None
+            response.close()

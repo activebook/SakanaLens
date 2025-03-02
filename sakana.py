@@ -20,6 +20,12 @@ import config
 
 """
 Custom handler for unraisable exceptions.
+**This problem is just for Google Cloud API**
+Under Python 3.13
+when doing this: for chunk in response:
+it cannot close thread correctly.
+But under python 3.12, it can be closed correctly.
+There'll be no error message.
 
 This function filters out specific unraisable exceptions related to
 dummy thread finalization by checking the object's representation.
@@ -30,6 +36,7 @@ hook is used to handle them.
 Parameters:
     unraisable (unraisablehookargs): The unraisable exception details.
 """
+'''
 def my_unraisable_hook(unraisable):
     # Filter out the dummy thread finalization error by checking the object's representation.
     if "DeleteDummyThreadOnDel" in repr(unraisable.object):
@@ -39,7 +46,7 @@ def my_unraisable_hook(unraisable):
     sys.__excepthook__(unraisable.exc_type, unraisable.exc_value, unraisable.exc_traceback)
 
 sys.unraisablehook = my_unraisable_hook
-
+'''
 
 APP_TITLE = "Sakana Lens 日本語の自動翻訳"
 # Constants for keyboard shortcut events
@@ -450,6 +457,12 @@ class TkinterApp:
                 # Reset spinner
                 self.spinner_bar.stop()
     
+    # Stream response callback, give some time for mainloop response4
+    '''
+    def stream_response_call(self, text, end=False):
+        self.root.after(0, lambda: self._stream_response_call(text, end))
+    '''
+
     # Stream response callback
     def stream_response_call(self, text, end=False):
         # Check if it’s the first call; if so, initialize the counter and clear the text box.  
