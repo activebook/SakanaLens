@@ -95,3 +95,16 @@ Feel free to contribute to this project! If you encounter issues, please open an
 
 Happy translating! 🎉
 
+--- 
+
+{
+  "name": "Sakana Lens",
+  "description": "自動翻訳ツール (日本語対応)",
+  "version": "2.0",
+  "author": "Charles Liu",
+  "license": "Apache-2.0",
+  "system_requirements": {
+    "os": "macOS only",
+    "python": "Python 3.9+"
+  }
+}
