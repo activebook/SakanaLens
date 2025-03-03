@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import scrolledtext
-from AppKit import NSApplication, NSWorkspace
+from Cocoa import NSApplication, NSWorkspace
 from PyObjCTools import AppHelper
 from PIL import Image
 import Quartz
@@ -238,14 +238,14 @@ class TkinterApp:
         self.text_box.pack(padx=0, pady=(0,0), fill=tk.BOTH, expand=True)  
 
         # Add a button(no border) to show info
-        imark_path = os.path.dirname(os.path.realpath(__file__)) + "/info_mark.png"
+        imark_path = config.get_resource_path("images/info_mark.png")
         self.imark_img = tk.PhotoImage(file=imark_path)
         self.info_btn = tk.Label(root, image=self.imark_img, bg=self.text_box.cget("bg"), borderwidth=0, highlightthickness=0)
         self.info_btn.place(relx=0.05, rely=0.95, anchor="sw")     
 
         # Add a button(no border) to show tips
         # Build the file path to image
-        qmark_path = os.path.dirname(os.path.realpath(__file__)) + "/question_mark.png"
+        qmark_path = config.get_resource_path("images/question_mark.png")
         self.qmark_img = tk.PhotoImage(file=qmark_path)
         self.tips_btn = tk.Label(root, image=self.qmark_img, bg=self.text_box.cget("bg"), borderwidth=0, highlightthickness=0)
         self.tips_btn.place(relx=0.95, rely=0.95, anchor="se")
