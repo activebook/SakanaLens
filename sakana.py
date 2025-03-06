@@ -170,7 +170,8 @@ def simulate_ai_api(image, api_config, stream_call=None):
     return english_text
 
 # Function to simulate speech
-def simulate_speech(text, api_config):
+def simulate_speech(api_config):
+    text = translate.streamed_text.get_text()
     thread = translate.call_speech(text, api_config)
     # we don't need to wait for the thread to finish
     # because the mainloop will handle it
@@ -449,8 +450,12 @@ class TkinterApp:
             self.result_queue.put(formatted_text)  
             # Reset spinner
             self.spinner_bar.stop()
+            # Simulate speech
+            translate.streamed_text.clear()
+            translate.streamed_text.append(formatted_text)
+            simulate_speech(self.api_config)
         else:
-            # time-consuming function, with streaming
+            # time-consuming function, with streaming            
             formatted_text = process_capture_window_text(self.api_config, message, self.stream_response_call)
             if formatted_text is None:
                 # Nothing to translate (either user cancelled the capture or no text was detected)
@@ -470,13 +475,17 @@ class TkinterApp:
             # Initialize counter if it doesn't exist
             self._stream_response_call_count = 0
             self.text_box.delete(1.0, tk.END)
+            # Clear the streamed text
+            translate.streamed_text.clear()
             
         if not end:
             # If it’s not the end state, place the text into the result queue and increment the counter
+            translate.streamed_text.append(text)
             self.result_queue.put(text)
             self._stream_response_call_count += 1
         else:
             # If it’s the end state, insert the text into the text box, update the prompt message, and delete the counter.
+            translate.streamed_text.append(text)
             self.text_box.insert(tk.END, text + "\n")
             self.text_box.see(tk.END)
             # Reset spinner
@@ -484,8 +493,9 @@ class TkinterApp:
             # Remove the counter attribute when done
             del self._stream_response_call_count
             # Call speech
-            content = self.text_box.get("1.0", tk.END)
-            simulate_speech(content, self.api_config)
+            # Don't use this method, because the text_box is not updated yet, you 
+            # content = self.text_box.get("1.0", tk.END)
+            simulate_speech(self.api_config)
 
 
 

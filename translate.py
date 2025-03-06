@@ -3,6 +3,26 @@ import openchat
 import speech
 import threading
 
+class TextStreamMemory:
+    def __init__(self):
+        """Initialize with empty text storage."""
+        self.text = ""
+    
+    def append(self, new_text):
+        """Append new text to the stream."""
+        self.text += new_text
+        return self.text  # Returns current state for convenience
+    
+    def clear(self):
+        """Clear all stored text."""
+        self.text = ""
+        
+    def get_text(self):
+        """Return the current complete text."""
+        return self.text
+
+streamed_text = TextStreamMemory()
+
 # Function to call API for OCR and translation
 def call_real_api(image, api_config, callback=None):
     # Check if the API is compatible with OpenAI
@@ -49,8 +69,16 @@ def call_speech(text, api_config):
     speech_stream = speech_stream.lower()
     speech_result = True if speech_stream == "true" or speech_stream == "yes" else False
     if speech_result:
+        speech_type = api_config["SPEECH"]["TYPE"]
         # daemon thread for speeching
-        thread = threading.Thread(target=speech.call_sambert_client, args=(text, api_config), daemon=True)
+        if speech_type == "kokoro-online":
+            thread = threading.Thread(target=speech.call_kokoro_online, args=(text, api_config), daemon=True)
+        elif speech_type == "sambert":
+            thread = threading.Thread(target=speech.call_sambert_client, args=(text, api_config), daemon=True)
+        elif speech_type == "kokoro-offline":
+            thread = threading.Thread(target=speech.call_kokoro_offline, args=(text, api_config), daemon=True)
+        else:
+            return None
         thread.start()
         return thread
     

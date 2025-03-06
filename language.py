@@ -92,11 +92,11 @@ Returns:
 """
 def filter_target_lang(text, lang_type):
     lang_type = lang_type.lower()
-    if lang_type == "english" or lang_type == "en":
+    if lang_type == "english" or lang_type == "en" or lang_type == "en-us" or lang_type == "en-gb":
         return keep_english_only(text)
-    elif lang_type == "chinese" or lang_type == "cn":
+    elif lang_type == "chinese" or lang_type == "cn" or lang_type == "zh" or lang_type == "z":
         return keep_chinese_only(text)
-    elif lang_type == "japanese" or lang_type == "jp":
+    elif lang_type == "japanese" or lang_type == "jp" or lang_type == "ja" or lang_type == "j":
         return keep_japanese_only(text)
     else:
         return ""
