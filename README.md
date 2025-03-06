@@ -13,6 +13,7 @@
 - **Stay Focused**: No need to leave the app you're using. :eyes:
 - **Screen Text Detection**: Automatically translates visible text in the active application. :mag:
 - **Speech Support**: Converts translated text into speech (English & Chinese only, via Alibaba DashScope). :sound:
+- **Local Text-to-Speech (TTS)**: Support kokoro tts model, using local tts without token consumption. :speech_balloon:
 
 ---
 
